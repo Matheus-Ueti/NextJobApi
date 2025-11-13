@@ -142,4 +142,31 @@ public class GroqAIService {
             throw new BusinessException("Erro ao processar resposta da IA");
         }
     }
+    
+    public String gerarConteudo(String prompt) {
+        log.info("Gerando conteúdo com Groq AI");
+        
+        if (groqApiKey == null || groqApiKey.isEmpty()) {
+            throw new BusinessException("Groq API Key não configurada");
+        }
+        
+        try {
+            String response = chamarGroqAPI(prompt);
+            return extrairTexto(response);
+        } catch (Exception e) {
+            log.error("Erro ao gerar conteúdo com Groq API: ", e);
+            throw new BusinessException("Erro ao gerar conteúdo com IA", e);
+        }
+    }
+    
+    private String extrairTexto(String response) {
+        try {
+            JsonNode root = objectMapper.readTree(response);
+            String content = root.path("choices").get(0).path("message").path("content").asText();
+            return content.trim();
+        } catch (Exception e) {
+            log.error("Erro ao extrair texto da resposta: ", e);
+            throw new BusinessException("Erro ao processar resposta da IA");
+        }
+    }
 }

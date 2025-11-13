@@ -90,4 +90,16 @@ public class UsuarioService implements OAuth2UserService<OAuth2UserRequest, OAut
         Object value = attributes.get(attributeName);
         return value != null ? value.toString() : null;
     }
+    
+    @Transactional
+    public Usuario buscarOuCriarUsuario(String email, String nome) {
+        return usuarioRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    Usuario novoUsuario = Usuario.builder()
+                            .email(email)
+                            .nome(nome)
+                            .build();
+                    return usuarioRepository.save(novoUsuario);
+                });
+    }
 }
