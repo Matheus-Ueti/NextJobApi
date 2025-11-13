@@ -10,7 +10,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 
-@Configuration
+// @Configuration - DESABILITADO TEMPORARIAMENTE (OAuth2 precisa configuração Google Cloud)
 public class OAuth2Configuration {
 
     @Value("${spring.security.oauth2.client.registration.google.client-id:1047548179418-pfkmr394ljr9gj10kanhfrmrc781077.apps.googleusercontent.com}")
