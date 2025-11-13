@@ -1,33 +1,35 @@
 version: '3.8'
 
 services:
-  # RabbitMQ
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: nextjob-rabbitmq
-    ports:
-      - "5672:5672"
-      - "15672:15672"
+  postgres:
+    image: 'postgres:16-alpine'
+    container_name: nextjob-postgres
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      - 'POSTGRES_DB=nextjob'
+      - 'POSTGRES_USER=nextjob_user'
+      - 'POSTGRES_PASSWORD=nextjob_pass'
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nextjob-network
 
-  # Oracle Database (alternativa: usar Oracle XE ou H2 para dev)
-  # Para Oracle, você precisa baixar a imagem oficial
-  # oracle-db:
-  #   image: container-registry.oracle.com/database/express:latest
-  #   container_name: nextjob-oracle
-  #   ports:
-  #     - "1521:1521"
-  #     - "5500:5500"
-  #   environment:
-  #     ORACLE_PWD: senha_forte_aqui
+  rabbitmq:
+    image: 'rabbitmq:3-management-alpine'
+    container_name: nextjob-rabbitmq
+    environment:
+      - 'RABBITMQ_DEFAULT_USER=guest'
+      - 'RABBITMQ_DEFAULT_PASS=guest'
+    ports:
+      - '5672:5672'  # AMQP port
+      - '15672:15672'  # Management UI
+    networks:
+      - nextjob-network
+
+volumes:
+  postgres_data:
 
 networks:
-  default:
-    name: nextjob-network
+  nextjob-network:
+    driver: bridge

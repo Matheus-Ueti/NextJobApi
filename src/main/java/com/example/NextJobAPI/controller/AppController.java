@@ -10,10 +10,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-public class HomeController {
+public class AppController {
     
     @GetMapping
-    public ResponseEntity<Map<String, Object>> home() {
+    public ResponseEntity<Map<String, Object>> info() {
         return ResponseEntity.ok(Map.of(
                 "nome", "NextJob API",
                 "versao", "1.0.0",
@@ -21,7 +21,9 @@ public class HomeController {
                 "timestamp", LocalDateTime.now(),
                 "endpoints", Map.of(
                         "curriculos", "/api/curriculos",
-                        "analises", "/api/analises"
+                        "analises", "/api/analises",
+                        "health", "/actuator/health",
+                        "metrics", "/actuator/metrics"
                 )
         ));
     }

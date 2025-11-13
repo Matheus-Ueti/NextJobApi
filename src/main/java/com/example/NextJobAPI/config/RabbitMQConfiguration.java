@@ -19,9 +19,16 @@ public class RabbitMQConfiguration {
     public static final String ANALISE_EXCHANGE = "nextjob.analise.exchange";
     public static final String ANALISE_ROUTING_KEY = "nextjob.analise.routing.key";
     
+    public static final String PLANO_QUEUE = "plano.processamento";
+    
     @Bean
     public Queue analiseQueue() {
         return QueueBuilder.durable(ANALISE_QUEUE).build();
+    }
+    
+    @Bean
+    public Queue planoQueue() {
+        return QueueBuilder.durable(PLANO_QUEUE).build();
     }
     
     @Bean
