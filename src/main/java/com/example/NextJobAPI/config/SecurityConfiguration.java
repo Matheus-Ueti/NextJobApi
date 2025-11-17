@@ -10,21 +10,22 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfiguration {
-    
-    @Bean
+public class SecurityConfiguration {    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, UsuarioService usuarioService) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
-                    .anyRequest().permitAll()  // TEMPORÁRIO: Permitir tudo sem autenticação
+                    .requestMatchers("/login**", "/h2-console/**", "/error", "/oauth2/**", "/webjars/**", "/css/**", "/js/**", "/images/**").permitAll()
+                    .anyRequest().authenticated()
                 )
-                // OAuth2 Login desabilitado temporariamente
-                // .oauth2Login(oauth2 -> oauth2
-                //     .userInfoEndpoint(userInfo -> userInfo.userService(usuarioService))
-                //     .defaultSuccessUrl("/", true))
+                // OAuth2 Login ATIVADO - Redireciona para login se não autenticado
+                .oauth2Login(oauth2 -> oauth2
+                    .loginPage("/login")
+                    .userInfoEndpoint(userInfo -> userInfo.userService(usuarioService))
+                    .defaultSuccessUrl("/home", true))
+                .formLogin(form -> form.disable())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))
                 .build();
     }
