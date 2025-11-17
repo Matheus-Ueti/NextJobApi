@@ -169,4 +169,66 @@ public class GroqAIService {
             throw new BusinessException("Erro ao processar resposta da IA");
         }
     }
+    
+    public String gerarPlanoCarreira(String titulo, String curriculo) {
+        log.info("Gerando plano de carreira com Groq AI para: {}", titulo);
+        
+        if (groqApiKey == null || groqApiKey.isEmpty()) {
+            throw new BusinessException("Groq API Key não configurada");
+        }
+        
+        String prompt = criarPromptPlanoCarreira(titulo, curriculo);
+        
+        try {
+            String response = chamarGroqAPI(prompt);
+            return extrairTexto(response);
+        } catch (Exception e) {
+            log.error("Erro ao gerar plano de carreira com Groq API: ", e);
+            throw new BusinessException("Erro ao gerar plano de carreira com IA", e);
+        }
+    }
+    
+    private String criarPromptPlanoCarreira(String titulo, String curriculo) {
+        return String.format("""
+            Você é um especialista em desenvolvimento de carreira e orientação profissional.
+            
+            Com base no seguinte currículo, crie um plano de carreira detalhado e personalizado para: "%s"
+            
+            CURRÍCULO:
+            %s
+            
+            Por favor, forneça um plano de carreira estruturado e bem formatado em Markdown com:
+            
+            1. **📊 Análise do Perfil Atual**
+               - Pontos fortes identificados
+               - Áreas de melhoria
+               - Competências técnicas presentes
+            
+            2. **🎯 Objetivos de Carreira**
+               - **Curto Prazo (6 meses)**: metas imediatas e alcançáveis
+               - **Médio Prazo (1-2 anos)**: objetivos de consolidação
+               - **Longo Prazo (3-5 anos)**: visão de futuro profissional
+            
+            3. **📚 Plano de Desenvolvimento**
+               - Cursos e certificações recomendados (com nomes específicos)
+               - Tecnologias para aprender (liste as mais relevantes)
+               - Soft skills a desenvolver
+            
+            4. **🚀 Estratégias de Crescimento**
+               - Oportunidades de networking
+               - Projetos práticos sugeridos
+               - Áreas de especialização recomendadas
+            
+            5. **✅ Próximos Passos Imediatos**
+               - Liste 5 ações concretas e específicas para começar AGORA
+               - Seja direto e prático
+            
+            **IMPORTANTE**: 
+            - Use formatação Markdown (títulos, listas, negrito, etc)
+            - Seja específico e mencione tecnologias, cursos e certificações reais
+            - Adapte as recomendações ao nível de experiência apresentado
+            - Seja motivador mas realista
+            - Inclua emojis para tornar mais visual e atrativo
+            """, titulo, curriculo);
+    }
 }

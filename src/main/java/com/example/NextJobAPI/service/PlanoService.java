@@ -25,10 +25,10 @@ public class PlanoService {
     private final PlanoRepository planoRepository;
     private final UsuarioService usuarioService;
     private final RabbitTemplate rabbitTemplate;
+    private final GroqAIService groqAIService;
     
     private static final String PLANO_QUEUE = "plano.processamento";
-    
-    @Transactional
+      @Transactional
     @CacheEvict(value = "planos", allEntries = true)
     public PlanoResponseDTO criarPlano(PlanoRequestDTO request, String email) {
         log.info("Criando plano para usuário: {}", email);
@@ -40,15 +40,27 @@ public class PlanoService {
         plano.setDescricao(request.getDescricao());
         plano.setCategoria(request.getCategoria());
         plano.setPrioridade(request.getPrioridade());
-        plano.setStatus(request.getStatus() != null ? request.getStatus() : "PENDENTE");
+        plano.setStatus("PROCESSANDO"); // Mudou para PROCESSANDO
         plano.setUsuario(usuario);
         
         Plano salvo = planoRepository.save(plano);
         log.info("Plano criado com ID: {}", salvo.getId());
         
-        // Envia para fila do RabbitMQ para processamento assíncrono
-        if ("PENDENTE".equals(salvo.getStatus())) {
-            enviarParaProcessamento(salvo.getId());
+        // Gera o conteúdo com IA de forma síncrona
+        try {
+            log.info("Gerando conteúdo com Groq AI...");
+            String conteudoIA = groqAIService.gerarPlanoCarreira(request.getTitulo(), request.getDescricao());
+            
+            salvo.setConteudoGerado(conteudoIA);
+            salvo.setStatus("CONCLUIDO");
+            salvo = planoRepository.save(salvo);
+            
+            log.info("Conteúdo gerado com sucesso pela IA");
+        } catch (Exception e) {
+            log.error("Erro ao gerar conteúdo com IA: {}", e.getMessage());
+            salvo.setStatus("ERRO");
+            salvo.setConteudoGerado("Erro ao gerar plano com IA: " + e.getMessage());
+            salvo = planoRepository.save(salvo);
         }
         
         return toResponseDTO(salvo);

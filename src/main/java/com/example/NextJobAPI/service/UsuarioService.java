@@ -18,20 +18,26 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsuarioService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final UsuarioRepository usuarioRepository;
-    private final DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
-
-    @Override
+    private final DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();    @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
         register(oAuth2User);
         return oAuth2User;
-    }
-
-    @Transactional
+    }    @Transactional
     public Usuario register(OAuth2User oAuth2User) {
-        String email = attributeToString(oAuth2User, "email");
-        if (email == null || email.isBlank()) {
-            throw new ValidationException("OAuth2 provider não retornou email");
+        // GitHub pode retornar email como null se não for público
+        // Primeiro tenta pegar email, senão usa login@github.com
+        final String email;
+        String emailAttr = attributeToString(oAuth2User, "email");
+        if (emailAttr == null || emailAttr.isBlank()) {
+            String login = attributeToString(oAuth2User, "login");
+            if (login != null && !login.isBlank()) {
+                email = login + "@github.com";
+            } else {
+                throw new ValidationException("OAuth2 provider não retornou email ou login");
+            }
+        } else {
+            email = emailAttr;
         }
 
         return usuarioRepository.findByEmail(email)

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextJob - Diagnóstico OAuth2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #FF6B35;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .section {
+            background: #2d3748;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+        }
+
+        .status-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        .ok {
+            color: #48bb78;
+        }
+
+        .error {
+            color: #f56565;
+        }
+
+        .warning {
+            color: #ed8936;
+        }
+
+        code {
+            background: #1a202c;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #90cdf4;
+            font-size: 14px;
+        }
+
+        .config-item {
+            margin: 8px 0;
+            padding: 12px;
+            background: #1a202c;
+            border-radius: 4px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #FF6B35;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-top: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #e55a2a;
+            transform: translateY(-2px);
+        }
+
+        .help-text {
+            color: #a0aec0;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnóstico OAuth2 - NextJob</h1>
+
+        <div class="section">
+            <h2>📋 Configurações Carregadas</h2>
+            <div class="config-item">
+                <strong>Client ID:</strong><br>
+                <code th:text="${clientId != null && !#strings.isEmpty(clientId)} ? ${#strings.substring(clientId, 0, 30) + '...'} : 'NÃO CONFIGURADO'">-</code>
+                <div class="status">
+                    <span class="status-icon" th:classappend="${clientId != null && !#strings.isEmpty(clientId)} ? 'ok' : 'error'">
+                        <span th:if="${clientId != null && !#strings.isEmpty(clientId)}">✓</span>
+                        <span th:unless="${clientId != null && !#strings.isEmpty(clientId)}">✗</span>
+                    </span>
+                    <span th:if="${clientId != null && !#strings.isEmpty(clientId)}">Client ID configurado</span>
+                    <span th:unless="${clientId != null && !#strings.isEmpty(clientId)}">Client ID não encontrado</span>
+                </div>
+            </div>
+
+            <div class="config-item">
+                <strong>Client Secret:</strong><br>
+                <code th:text="${clientSecret != null && !#strings.isEmpty(clientSecret)} ? '****' + ${#strings.substring(clientSecret, #strings.length(clientSecret) - 4)} : 'NÃO CONFIGURADO'">-</code>
+                <div class="status">
+                    <span class="status-icon" th:classappend="${clientSecret != null && !#strings.isEmpty(clientSecret)} ? 'ok' : 'error'">
+                        <span th:if="${clientSecret != null && !#strings.isEmpty(clientSecret)}">✓</span>
+                        <span th:unless="${clientSecret != null && !#strings.isEmpty(clientSecret)}">✗</span>
+                    </span>
+                    <span th:if="${clientSecret != null && !#strings.isEmpty(clientSecret)}">Client Secret configurado</span>
+                    <span th:unless="${clientSecret != null && !#strings.isEmpty(clientSecret)}">Client Secret não encontrado</span>
+                </div>
+            </div>
+
+            <div class="config-item">
+                <strong>Redirect URI:</strong><br>
+                <code>http://localhost:8080/login/oauth2/code/google</code>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🛠️ Checklist do Google Cloud Console</h2>
+            <div class="status">
+                <span class="status-icon warning">⚠</span>
+                Verifique se as configurações estão corretas no Google Cloud Console
+            </div>
+            <div class="config-item">
+                <strong>1. Authorized JavaScript origins:</strong><br>
+                <code>http://localhost:8080</code>
+            </div>
+            <div class="config-item">
+                <strong>2. Authorized redirect URIs:</strong><br>
+                <code>http://localhost:8080/login/oauth2/code/google</code>
+            </div>
+            <p class="help-text">
+                ⚡ Após alterar as configurações no Google Cloud Console, aguarde alguns minutos para propagação.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Solução de Problemas</h2>
+            <div class="config-item">
+                <strong>Se o erro persistir:</strong>
+                <ol style="margin-left: 20px; margin-top: 10px;">
+                    <li>Verifique se o Client Secret está correto (pode ter expirado)</li>
+                    <li>Regenere o Client Secret no Google Cloud Console</li>
+                    <li>Atualize o arquivo <code>.env</code> com o novo secret</li>
+                    <li>Reinicie a aplicação</li>
+                    <li>Limpe o cache do navegador (Ctrl + Shift + Delete)</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Logs e Erros</h2>
+            <div class="config-item" th:if="${error}">
+                <div class="status">
+                    <span class="status-icon error">✗</span>
+                    <span>Erro detectado: <code th:text="${error}">-</code></span>
+                </div>
+            </div>
+            <div class="config-item" th:unless="${error}">
+                <div class="status">
+                    <span class="status-icon ok">✓</span>
+                    <span>Nenhum erro recente detectado</span>
+                </div>
+            </div>
+            <p class="help-text">
+                💡 Verifique os logs do console do Spring Boot para mais detalhes
+            </p>
+        </div>
+
+        <a href="/login" class="btn">← Voltar para Login</a>
+        <a href="/oauth2/authorization/google" class="btn">🔄 Testar Login Google</a>
+    </div>
+</body>
+</html>

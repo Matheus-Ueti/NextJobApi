@@ -1,5 +1,6 @@
 package com.example.NextJobAPI.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,36 +9,37 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 
-@Configuration // ATIVADO - OAuth2 configuração para Google
+@Slf4j
+@Configuration
 public class OAuth2Configuration {
 
-    @Value("${spring.security.oauth2.client.registration.google.client-id:}")
+    @Value("${spring.security.oauth2.client.registration.github.client-id:}")
     private String clientId;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-secret:}")
+    @Value("${spring.security.oauth2.client.registration.github.client-secret:}")
     private String clientSecret;
 
     @Bean
     public ClientRegistrationRepository clientRegistrationRepository() {
-        return new InMemoryClientRegistrationRepository(googleClientRegistration());
+        log.info("Configurando OAuth2 com GitHub Client ID: {}...", 
+                 clientId != null && !clientId.isEmpty() ? clientId.substring(0, Math.min(10, clientId.length())) + "..." : "NÃO CONFIGURADO");
+        return new InMemoryClientRegistrationRepository(githubClientRegistration());
     }
 
-    private ClientRegistration googleClientRegistration() {
-        return ClientRegistration.withRegistrationId("google")
+    private ClientRegistration githubClientRegistration() {
+        return ClientRegistration.withRegistrationId("github")
                 .clientId(clientId)
                 .clientSecret(clientSecret)
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .redirectUri("{baseUrl}/login/oauth2/code/{registrationId}")
-                .scope("profile", "email")
-                .authorizationUri("https://accounts.google.com/o/oauth2/v2/auth")
-                .tokenUri("https://www.googleapis.com/oauth2/v4/token")
-                .userInfoUri("https://www.googleapis.com/oauth2/v3/userinfo")
-                .userNameAttributeName(IdTokenClaimNames.SUB)
-                .jwkSetUri("https://www.googleapis.com/oauth2/v3/certs")
-                .clientName("Google")
+                .scope("read:user", "user:email")
+                .authorizationUri("https://github.com/login/oauth/authorize")
+                .tokenUri("https://github.com/login/oauth/access_token")
+                .userInfoUri("https://api.github.com/user")
+                .userNameAttributeName("id")
+                .clientName("GitHub")
                 .build();
     }
 }

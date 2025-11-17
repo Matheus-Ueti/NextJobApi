@@ -25,7 +25,7 @@ public class PerfilController {
             @Valid @RequestBody PerfilRequestDTO request,
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         PerfilResponseDTO response = perfilService.criarPerfil(request, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -34,7 +34,7 @@ public class PerfilController {
     public ResponseEntity<List<PerfilResponseDTO>> listar(
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         List<PerfilResponseDTO> perfis = perfilService.listarPerfis(email);
         return ResponseEntity.ok(perfis);
     }
@@ -44,7 +44,7 @@ public class PerfilController {
             @PathVariable Long id,
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         PerfilResponseDTO perfil = perfilService.buscarPorId(id, email);
         return ResponseEntity.ok(perfil);
     }
@@ -55,7 +55,7 @@ public class PerfilController {
             @Valid @RequestBody PerfilRequestDTO request,
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         PerfilResponseDTO response = perfilService.atualizar(id, request, email);
         return ResponseEntity.ok(response);
     }
@@ -65,8 +65,17 @@ public class PerfilController {
             @PathVariable Long id,
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         perfilService.deletar(id, email);
         return ResponseEntity.noContent().build();
+    }
+    
+    private String getEmailFromPrincipal(OAuth2User principal) {
+        String email = principal.getAttribute("email");
+        if (email == null || email.isBlank()) {
+            String login = principal.getAttribute("login");
+            email = login != null ? login + "@github.com" : "user@github.com";
+        }
+        return email;
     }
 }

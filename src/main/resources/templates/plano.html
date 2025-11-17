@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextJob - Gerar Plano de Carreira com IA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .brand {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .back-btn {
+            background: #f7fafc;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #4a5568;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }        .back-btn:hover {
+            background: #edf2f7;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            object-fit: cover;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: #a0aec0;
+            margin-top: 6px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 30px;
+            background: #ffffff;
+            border-radius: 12px;
+            border: 2px solid #48bb78;
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.1);
+        }
+
+        .result.active {
+            display: block;
+        }
+
+        .result h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-content {
+            color: #4a5568;
+            line-height: 1.8;
+        }
+        
+        .result-content h1,
+        .result-content h2,
+        .result-content h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .result-content li {
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        
+        .result-content strong {
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .error {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #fed7d7;
+            border-radius: 8px;
+            color: #c53030;
+            border-left: 4px solid #fc8181;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .main-card {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>    <div class="container">
+        <div class="header">
+            <div class="logo-section">
+                <div class="logo">N</div>
+                <span class="brand">NextJob</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img th:if="${userPicture != null}" th:src="${userPicture}" alt="Foto de perfil" class="user-avatar" th:title="${userName}">
+                <a href="/home" class="back-btn">← Voltar</a>
+            </div>
+        </div>
+
+        <div class="main-card">
+            <h1>🤖 Gerar Plano de Carreira com IA</h1>
+            <p class="subtitle">Digite as informações do seu currículo e nossa IA Groq LLaMA 3.3 70B irá gerar um plano de carreira personalizado para você.</p>
+
+            <form id="planoForm">
+                <div class="form-group">
+                    <label for="titulo">Título do Plano</label>
+                    <input type="text" id="titulo" name="titulo" placeholder="Ex: Plano de Carreira para Desenvolvedor Full Stack" required>
+                    <p class="hint">Dê um nome descritivo para seu plano de carreira</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="curriculo">Conteúdo do Currículo</label>
+                    <textarea id="curriculo" name="curriculo" placeholder="Digite aqui seu currículo completo:&#10;&#10;Nome: João Silva&#10;Cargo Atual: Desenvolvedor Junior&#10;Experiência: 2 anos com Java e Spring Boot&#10;Formação: Ciência da Computação&#10;Habilidades: Java, Spring Boot, SQL, Git&#10;Objetivos: Tornar-me desenvolvedor sênior em 3 anos&#10;&#10;Seja o mais detalhado possível sobre sua experiência, habilidades e objetivos profissionais." required></textarea>
+                    <p class="hint">Quanto mais detalhes você fornecer, melhor será o plano gerado pela IA</p>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    ✨ Gerar Plano com IA
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Aguarde, a IA está analisando seu currículo e gerando um plano personalizado...</p>
+            </div>
+
+            <div class="error" id="error"></div>
+
+            <div class="result" id="result">
+                <h3>✅ Plano de Carreira Gerado</h3>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+        </div>
+    </div>    <script>
+        const form = document.getElementById('planoForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const resultContent = document.getElementById('resultContent');
+        const errorDiv = document.getElementById('error');
+
+        // Função simples para formatar Markdown básico
+        function formatMarkdown(text) {
+            return text
+                // Títulos
+                .replace(/^### (.*$)/gm, '<h3 style="margin-top: 20px; margin-bottom: 10px; color: #2d3748; font-size: 18px;">$1</h3>')
+                .replace(/^## (.*$)/gm, '<h2 style="margin-top: 25px; margin-bottom: 12px; color: #2d3748; font-size: 22px;">$1</h2>')
+                .replace(/^# (.*$)/gm, '<h1 style="margin-top: 30px; margin-bottom: 15px; color: #2d3748; font-size: 26px;">$1</h1>')
+                // Negrito
+                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #1a202c;">$1</strong>')
+                // Itálico
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                // Listas
+                .replace(/^- (.*$)/gm, '<li style="margin-left: 20px; margin-bottom: 5px;">$1</li>')
+                // Quebras de linha
+                .replace(/\n/g, '<br>')
+                // Links
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: #667eea; text-decoration: underline;">$1</a>');
+        }        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            console.log('Formulário enviado!');
+
+            // Reset states
+            result.classList.remove('active');
+            errorDiv.classList.remove('active');
+            loading.classList.add('active');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Processando...';
+
+            const titulo = document.getElementById('titulo').value;
+            const curriculo = document.getElementById('curriculo').value;
+            
+            console.log('Título:', titulo);
+            console.log('Currículo:', curriculo.substring(0, 100) + '...');
+
+            try {
+                console.log('Enviando requisição para /api/planos...');
+                
+                const response = await fetch('/api/planos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        titulo: titulo,
+                        descricao: curriculo,
+                        categoria: 'Desenvolvimento de Carreira',
+                        prioridade: 'ALTA'
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Erro na resposta:', errorText);
+                    throw new Error('Erro ao gerar plano. Código: ' + response.status);
+                }
+
+                const data = await response.json();
+                console.log('Dados recebidos:', data);
+                
+                // Renderiza o conteúdo gerado pela IA (em Markdown)
+                const conteudo = data.conteudoGerado || data.descricao || 'Plano gerado com sucesso!';
+                
+                if (!data.conteudoGerado) {
+                    console.warn('conteudoGerado não encontrado, usando fallback');
+                }
+                
+                resultContent.innerHTML = formatMarkdown(conteudo);
+                result.classList.add('active');
+
+                // Scroll to result
+                setTimeout(() => {
+                    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+
+            } catch (error) {
+                console.error('Erro capturado:', error);
+                errorDiv.textContent = '❌ ' + error.message;
+                errorDiv.classList.add('active');
+            } finally {
+                loading.classList.remove('active');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '✨ Gerar Plano com IA';
+            }
+        });
+    </script>
+</body>
+</html>

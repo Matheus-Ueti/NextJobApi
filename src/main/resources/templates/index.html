@@ -89,11 +89,48 @@
             transition: all 0.3s;
             border: none;
             cursor: pointer;
-        }
-
-        .login-btn:hover {
+        }        .login-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(255, 107, 53, 0.3);
+        }
+
+        /* User Profile */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #e2e8f0;
+            object-fit: cover;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .user-avatar:hover {
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: #718096;
         }
 
         /* Hero Section */
@@ -319,8 +356,7 @@
         }
     </style>
 </head>
-<body>
-    <!-- Header -->
+<body>    <!-- Header -->
     <header class="header">
         <div class="header-content">
             <div class="logo-section">
@@ -329,49 +365,44 @@
             </div>
             <nav class="nav-links">
                 <a href="/" class="nav-link">Início</a>
-                <a href="/perfil" class="nav-link">Perfil</a>
-                <a href="/planos" class="nav-link">Planos</a>
-                <a href="/login" class="login-btn">Entrar</a>
+                <a href="/plano" class="nav-link">Gerar Plano</a>
+                <a href="/planos" class="nav-link">Meus Planos</a>
+                
+                <!-- User Profile -->
+                <div class="user-profile" th:if="${userPicture != null}">
+                    <div class="user-info">
+                        <span class="user-name" th:text="${userName}">Usuário</span>
+                        <span class="user-email" th:text="${userEmail}">email@exemplo.com</span>
+                    </div>
+                    <img th:src="${userPicture}" alt="Foto de perfil" class="user-avatar" th:title="${userName}">
+                </div>
+                
+                <!-- Login Button (se não estiver autenticado) -->
+                <a href="/login" class="login-btn" th:if="${userPicture == null}">Entrar</a>
             </nav>
         </div>
-    </header>
-
-    <!-- Hero Section -->
+    </header>    <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
             <h1>Bem-vindo ao NextJob!</h1>
-            <p>Impulsione sua carreira com Inteligência Artificial. Crie perfis profissionais e gere planos de carreira personalizados.</p>            <p>Impulsione sua carreira com Inteligência Artificial. Crie perfis profissionais e gere planos de carreira personalizados.</p>
+            <p>Impulsione sua carreira com Inteligência Artificial. Gere planos de carreira personalizados analisando seu currículo com nossa IA Groq LLaMA 3.3 70B.</p>
             <div class="cta-buttons">
-                <a href="/perfil" class="btn-primary">Criar Perfil</a>
-                <a href="/plano" class="btn-secondary">Gerar Plano com IA</a>
+                <a href="/plano" class="btn-primary">✨ Gerar Plano com IA</a>
             </div>
         </div>
     </section>
 
     <!-- Main Cards -->
-    <div class="container">
-        <h2 class="section-title">Principais Funcionalidades</h2>
+    <div class="container">        <h2 class="section-title">Principais Funcionalidades</h2>
         <p class="section-subtitle">Tudo que você precisa para impulsionar sua carreira</p>
 
         <div class="cards-grid">
-            <div class="card">
-                <div class="card-icon card-icon-orange">
-                    👤
-                </div>
-                <h3>Perfil Profissional</h3>
-                <p>Crie e gerencie seu perfil profissional completo com informações sobre cargo, experiência e habilidades.</p>
-                <a href="/perfil" class="card-link">
-                    Criar perfil
-                    <span>→</span>
-                </a>
-            </div>
-
             <div class="card">
                 <div class="card-icon card-icon-purple">
                     🤖
                 </div>
                 <h3>Planos com IA</h3>
-                <p>Gere planos de carreira personalizados usando Inteligência Artificial Groq LLaMA 3.3 70B.</p>
+                <p>Gere planos de carreira personalizados digitando seu currículo e usando Inteligência Artificial Groq LLaMA 3.3 70B.</p>
                 <a href="/plano" class="card-link">
                     Gerar plano
                     <span>→</span>

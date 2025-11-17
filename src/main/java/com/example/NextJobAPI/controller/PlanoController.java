@@ -19,13 +19,12 @@ import java.util.List;
 public class PlanoController {
     
     private final PlanoService planoService;
-    
-    @PostMapping
+      @PostMapping
     public ResponseEntity<PlanoResponseDTO> criar(
             @Valid @RequestBody PlanoRequestDTO request,
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         PlanoResponseDTO response = planoService.criarPlano(request, email);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -34,7 +33,7 @@ public class PlanoController {
     public ResponseEntity<List<PlanoResponseDTO>> listar(
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         List<PlanoResponseDTO> planos = planoService.listarPlanos(email);
         return ResponseEntity.ok(planos);
     }
@@ -44,7 +43,7 @@ public class PlanoController {
             @PathVariable Long id,
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         PlanoResponseDTO plano = planoService.buscarPorId(id, email);
         return ResponseEntity.ok(plano);
     }
@@ -54,7 +53,7 @@ public class PlanoController {
             @PathVariable String status,
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         List<PlanoResponseDTO> planos = planoService.listarPorStatus(email, status);
         return ResponseEntity.ok(planos);
     }
@@ -65,7 +64,7 @@ public class PlanoController {
             @Valid @RequestBody PlanoRequestDTO request,
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         PlanoResponseDTO response = planoService.atualizar(id, request, email);
         return ResponseEntity.ok(response);
     }
@@ -75,8 +74,17 @@ public class PlanoController {
             @PathVariable Long id,
             @AuthenticationPrincipal OAuth2User principal) {
         
-        String email = principal.getAttribute("email");
+        String email = getEmailFromPrincipal(principal);
         planoService.deletar(id, email);
         return ResponseEntity.noContent().build();
+    }
+    
+    private String getEmailFromPrincipal(OAuth2User principal) {
+        String email = principal.getAttribute("email");
+        if (email == null || email.isBlank()) {
+            String login = principal.getAttribute("login");
+            email = login != null ? login + "@github.com" : "user@github.com";
+        }
+        return email;
     }
 }
