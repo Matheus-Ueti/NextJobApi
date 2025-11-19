@@ -1,31 +1,62 @@
-version: '3.8'
-
 services:
   postgres:
-    image: 'postgres:16-alpine'
+    image: "postgres:16-alpine"
     container_name: nextjob-postgres
     environment:
-      - 'POSTGRES_DB=nextjob'
-      - 'POSTGRES_USER=nextjob_user'
-      - 'POSTGRES_PASSWORD=nextjob_pass'
+      - "POSTGRES_DB=nextjob"
+      - "POSTGRES_USER=nextjob_user"
+      - "POSTGRES_PASSWORD=nextjob_pass"
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - nextjob-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nextjob_user -d nextjob"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
-    image: 'rabbitmq:3-management-alpine'
+    image: "rabbitmq:3-management-alpine"
     container_name: nextjob-rabbitmq
     environment:
-      - 'RABBITMQ_DEFAULT_USER=guest'
-      - 'RABBITMQ_DEFAULT_PASS=guest'
+      - "RABBITMQ_DEFAULT_USER=guest"
+      - "RABBITMQ_DEFAULT_PASS=guest"
     ports:
-      - '5672:5672'  # AMQP port
-      - '15672:15672'  # Management UI
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI
     networks:
       - nextjob-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextjob-api
+    environment:
+      - "SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/nextjob"
+      - "SPRING_DATASOURCE_USERNAME=nextjob_user"
+      - "SPRING_DATASOURCE_PASSWORD=nextjob_pass"
+      - "SPRING_RABBITMQ_HOST=rabbitmq"
+      - "SPRING_RABBITMQ_PORT=5672"
+      - "SPRING_RABBITMQ_USERNAME=guest"
+      - "SPRING_RABBITMQ_PASSWORD=guest"
+    ports:
+      - "8080:8080"
+    networks:
+      - nextjob-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
 volumes:
   postgres_data:
